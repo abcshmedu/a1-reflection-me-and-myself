@@ -1,57 +1,84 @@
 package edu.hm.cs.swa.demo;
-
-import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
- * Created by oliver on 30.03.17.
+ * A class which renders fields with the annotation @
+ * @author Oliver Hauser, ohauser@hm.edu
+ * @since 09.04.2017
  */
-
 public class Renderer {
 
-    private final Object target;
+    //fields
+    private final Object toRender;
 
+    /**
+     * Constructor
+     * @param object
+     */
     public Renderer(Object object){
-        this.target = object;
+        this.toRender = object;
     }
 
-    public String render() throws IllegalAccessException, InstantiationException {
+    /**
+     * method to render the fields
+     * @return output string
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     */
+    public String render() throws IllegalAccessException, InstantiationException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException {
 
+        //output buffer
         final StringBuffer output = new StringBuffer();
-        output.append("Instance of "+ target.getClass().getCanonicalName() +":\n");
+        output.append("Instance of "+ toRender.getClass().getCanonicalName() +":\n");
 
-        Field[] fields = target.getClass().getDeclaredFields();
+        //get fields of toRender class
+        Field[] fields = toRender.getClass().getDeclaredFields();
+
+        //loop through fields
         for(Field field: fields) {
+
+            //check if field has annotation @RenderMe
             if(field.isAnnotationPresent(RenderMe.class)){
 
-                field.setAccessible(true);
+                //change the field to public
+                if (!field.isAccessible())
+                    field.setAccessible(true);
 
-                Object value = field.get(target.getClass().newInstance());
+                final Object fieldValue;
+                final String withClassString = field.getAnnotation(RenderMe.class).with();
 
-                if(field.getType().isArray()) {
-                    Object array = field.get(target.getClass().newInstance());
-                    int length = Array.getLength(array);
-                    for (int i = 0; i < length; i++) {
-                         value = Array.get(array, i);
+                //is annotation value given?
+                if (!withClassString.equals("")){
 
+                    //get render method of the given class
+                    Class withClass = Class.forName(withClassString);
+                    Object instanceOfWithClass = withClass.newInstance();
+                    Method method = withClass.getMethod("render",Object.class);
+
+                    //set method to public
+                    if(!method.isAccessible()){
+                        method.setAccessible(true);
                     }
+
+                    //use render method on the field value
+                    fieldValue = method.invoke(instanceOfWithClass,field.get(toRender));
                 }
 
+                else
+                    //print the field value with toString()
+                    fieldValue = field.get(toRender).toString();
 
-                output.append(String.format("%s (Type %s): %s\n",
-                        field.getName(),
-                        field.getType().getCanonicalName(),
-                        value));
+                output.append(String.format("%s (Type %s): %s\n", field.getName(), field.getType().getCanonicalName(),fieldValue));
             }
-
-
         }
         return output.toString();
     }
 
 
-    public static void main(String... args) throws InstantiationException, IllegalAccessException {
-        System.out.println(new Renderer(new App()).render());
+    public static void main(String... args) throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, ClassNotFoundException {
+        System.out.println(new Renderer(new SomeClass(5)).render());
     }
 
 }

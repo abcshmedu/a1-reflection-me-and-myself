@@ -13,7 +13,12 @@ import java.lang.reflect.Array;
  * @author Oliver Hauser, ohauser@hm.edu
  * @since 09.04.2017
  */
-public class ArrayRenderer {
+public final class ArrayRenderer {
+
+    /**
+     * default constructor. Not public.
+     */
+    private ArrayRenderer() { };
 
     /**
      * Renders the values of an array.
@@ -23,7 +28,7 @@ public class ArrayRenderer {
      * @param inputField field with array
      * @return output string
      */
-    public static String render(Object inputField){
+    public static String render(Object inputField) {
 
         String arrayValues = " [";
 
@@ -32,6 +37,6 @@ public class ArrayRenderer {
             arrayValues += ", ";
         }
 
-        return arrayValues+"]";
+        return arrayValues + "]";
     }
 }

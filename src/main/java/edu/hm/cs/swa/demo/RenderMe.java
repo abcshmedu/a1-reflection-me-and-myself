@@ -17,5 +17,10 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RenderMe {
 
+    /**
+     * Value for annotation.
+     * Give class by classpath for array renderer.
+     * @return string
+     */
     String with() default "";
 }

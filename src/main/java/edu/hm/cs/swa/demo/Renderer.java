@@ -21,10 +21,10 @@ public class Renderer {
     private final Object toRender;
 
     /**
-     * Constructor
-     * @param object
+     * Constructor.
+     * @param object object to render
      */
-    public Renderer(Object object){
+    public Renderer(Object object) {
         this.toRender = object;
     }
 
@@ -34,45 +34,49 @@ public class Renderer {
      * annotation and renders them with the pattern:
      * name (Type type): value\n .
      * @return output string
-     * @throws IllegalAccessException
-     * @throws InstantiationException
+     * @throws IllegalAccessException if class given in the with value is not accessible
+     * @throws InstantiationException if class given in the with value is not instantiable
+     * @throws ClassNotFoundException if class given in the with value was not found
+     * @throws NoSuchMethodException if renderer method in the class given in the with value does not exist
+     * @throws InvocationTargetException if renderer method in class given in the with value is not invokeable
      */
     public String render() throws IllegalAccessException, InstantiationException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException {
 
         //output buffer
         final StringBuffer output = new StringBuffer();
-        output.append("Instance of "+ toRender.getClass().getCanonicalName() +":\n");
+        output.append("Instance of " + toRender.getClass().getCanonicalName() + ":\n");
 
         //get fields of toRender class
         Field[] fields = toRender.getClass().getDeclaredFields();
 
         //loop through fields
-        for(Field field: fields) {
+        for (Field field: fields) {
 
             //check if field has annotation @RenderMe
-            if(field.isAnnotationPresent(RenderMe.class)){
+            if (field.isAnnotationPresent(RenderMe.class)) {
 
                 //change the field to public
                 if (!field.isAccessible()) {
                     field.setAccessible(true);
                 }
+
                 final Object fieldValue;
                 final String withClassString = field.getAnnotation(RenderMe.class).with();
 
                 //is annotation value given?
-                if (!withClassString.equals("")){
+                if (!withClassString.equals("")) {
 
                     //get method of class given in with annotation
                     Method method = callClassOfWithAnnotation(withClassString);
 
                     //use render method on the field value
-                    fieldValue = method.invoke(Class.forName(withClassString).newInstance(),field.get(toRender));
+                    fieldValue = method.invoke(Class.forName(withClassString).newInstance(), field.get(toRender));
                 }
 
-                else
+                else {
                     //print the field value with toString()
-                    fieldValue = ": "+field.get(toRender).toString();
-
+                    fieldValue = ": " + field.get(toRender).toString();
+                }
                 output.append(String.format("%s (Type %s)%s\n", field.getName(), field.getType().getCanonicalName(), fieldValue));
             }
         }
@@ -81,15 +85,16 @@ public class Renderer {
         Method[] methods = toRender.getClass().getDeclaredMethods();
 
         //loop through methods
-        for(Method method : methods){
+        for (Method method : methods) {
 
             //check if method has annotation @RenderMe and no return type void and no parameters
-            if(method.isAnnotationPresent(RenderMe.class) && !method.getReturnType().equals(Void.TYPE) && method.getParameterCount() == 0){
+            if (method.isAnnotationPresent(RenderMe.class) && !method.getReturnType().equals(Void.TYPE) && method.getParameterCount() == 0) {
 
                 //set method to public
-                if(!method.isAccessible()) {
+                if (!method.isAccessible()) {
                     method.setAccessible(true);
                 }
+
                 final Object methodValue;
                 final String withClassString = method.getAnnotation(RenderMe.class).with();
 
@@ -118,19 +123,17 @@ public class Renderer {
      * with value of the @RenderMe annoation.
      * @param withClassString string of the with value
      * @return Method the method of the class
-     * @throws ClassNotFoundException
-     * @throws IllegalAccessException
-     * @throws InstantiationException
-     * @throws NoSuchMethodException
+     * @throws ClassNotFoundException if class given in the with value was not found
+     * @throws NoSuchMethodException if renderer method in the class given in the with value does not exist
      */
-    private Method callClassOfWithAnnotation(String withClassString) throws ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException {
+    private Method callClassOfWithAnnotation(String withClassString) throws ClassNotFoundException, NoSuchMethodException {
 
         //get render method of the given class
         final Class withClass = Class.forName(withClassString);
-        final Method method = withClass.getMethod("render",Object.class);
+        final Method method = withClass.getMethod("render", Object.class);
 
         //set method to public
-        if(!method.isAccessible()){
+        if (!method.isAccessible()) {
             method.setAccessible(true);
         }
 

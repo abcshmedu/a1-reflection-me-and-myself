@@ -25,6 +25,11 @@ public class RendererTest {
     private Renderer output;
     private String expected;
 
+    private static final int THREE = 3;
+    private static final double FOUR = 4.0;
+    private static final int FIVE = 5;
+
+
     /**
      * Constructor.
      * @param toRender the class to be rendered
@@ -42,7 +47,7 @@ public class RendererTest {
     @Parameterized.Parameters
     public static Collection<Object[]> generateData() {
         return Arrays.asList(new Object[][] {
-            {new SomeClass(5), "Instance of edu.hm.cs.swa.demo.SomeClass:\nfoo (Type int): 5\narray (Type int[]) [1, 2, 3, ]\ndate (Type java.util.Date): Fri Jan 02 11:17:36 CET 1970\n"},
+            {new SomeClass(FIVE), "Instance of edu.hm.cs.swa.demo.SomeClass:\nfoo (Type int): 5\narray (Type int[]) [1, 2, 3, ]\ndate (Type java.util.Date): Fri Jan 02 11:17:36 CET 1970\n"},
             {new Class1(), "Instance of edu.hm.cs.swa.demo.RendererTest.Class1:\nTWO (Type int): 2\n"},
             {new Class2(), "Instance of edu.hm.cs.swa.demo.RendererTest.Class2:\none (Type java.lang.String): one\nTWO (Type double): 2.0\n"},
             {new Class3(), "Instance of edu.hm.cs.swa.demo.RendererTest.Class3:\none (Type int[]) [1, ]\nthree (Type char[]) [t, h, r, e, e, ]\n"},
@@ -52,7 +57,7 @@ public class RendererTest {
 
     /**
      * Test for all cases.
-     * @throws Exception
+     * @throws Exception throw exception if test does not pass
      */
     @Test
     public void testRendering() throws Exception {
@@ -63,7 +68,7 @@ public class RendererTest {
      * Test class number 1.
      */
     private static class Class1 {
-        public final int one = 1;
+        private final int one = 1;
         @RenderMe private static final int TWO = 2;
     }
 
@@ -71,7 +76,7 @@ public class RendererTest {
      * Test class number 2.
      */
     private static class Class2 {
-        @RenderMe final String one = "one";
+        @RenderMe private final String one = "one";
         @RenderMe static final double TWO = 2.0;
     }
 
@@ -79,27 +84,41 @@ public class RendererTest {
      * Test class number 3.
      */
     private static class Class3 {
-        @RenderMe(with="edu.hm.cs.swa.demo.ArrayRenderer")  final int[] one = new int[]{1};
+        @RenderMe(with = "edu.hm.cs.swa.demo.ArrayRenderer") private final int[] one = new int[] {1};
         private long two = 2;
-        @RenderMe(with="edu.hm.cs.swa.demo.ArrayRenderer") private char[] three = new char[] {'t','h','r','e','e'};
+        @RenderMe(with = "edu.hm.cs.swa.demo.ArrayRenderer") private char[] three = new char[] {'t', 'h', 'r', 'e', 'e'};
     }
 
     /**
      * Test class number 4.
      */
-    private static class Class4{
-        private int return1(){
+    private static class Class4 {
+
+        /**
+         * returns 1.
+         * @return int 1
+         */
+        private int return1() {
             return 1;
         }
-        @RenderMe int[] two = new int[]{1,2};
 
-        @RenderMe(with="edu.hm.cs.swa.demo.ArrayRenderer")
-        private int[] return3(){
-            return new int[]{1, 2, 3};
+        @RenderMe private int[] two = new int[] {1, 2};
+
+        /**
+         * Return 1,2,3.
+         * @return int[] array
+         */
+        @RenderMe(with = "edu.hm.cs.swa.demo.ArrayRenderer")
+        private int[] return3() {
+            return new int[] {1, 2, THREE};
         }
 
-        @RenderMe double return4(){
-            return 4.0;
+        /**
+         * return 4.0.
+         * @return double 4.0
+         */
+        @RenderMe double return4() {
+            return FOUR;
         }
     }
 
